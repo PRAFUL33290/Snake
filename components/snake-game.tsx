@@ -11,16 +11,24 @@ const INITIAL_SPEED = 150
 type Position = { x: number; y: number }
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT"
 
+const INITIAL_SNAKE: Position[] = [{ x: 10, y: 10 }]
+const INITIAL_FOOD: Position = { x: 15, y: 15 }
+
 export function SnakeGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }])
-  const [food, setFood] = useState<Position>({ x: 15, y: 15 })
+  const [mounted, setMounted] = useState(false)
+  const [snake, setSnake] = useState<Position[]>(INITIAL_SNAKE)
+  const [food, setFood] = useState<Position>(INITIAL_FOOD)
   const [direction, setDirection] = useState<Direction>("RIGHT")
   const [gameStatus, setGameStatus] = useState<"idle" | "playing" | "paused" | "gameover">("idle")
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(0)
   const directionRef = useRef(direction)
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const generateFood = useCallback((currentSnake: Position[]): Position => {
     let newFood: Position
@@ -34,14 +42,13 @@ export function SnakeGame() {
   }, [])
 
   const resetGame = useCallback(() => {
-    const initialSnake = [{ x: 10, y: 10 }]
-    setSnake(initialSnake)
-    setFood(generateFood(initialSnake))
+    setSnake(INITIAL_SNAKE)
+    setFood(INITIAL_FOOD)
     setDirection("RIGHT")
     directionRef.current = "RIGHT"
     setScore(0)
     setGameStatus("idle")
-  }, [generateFood])
+  }, [])
 
   const startGame = useCallback(() => {
     if (gameStatus === "gameover") {
@@ -250,6 +257,30 @@ export function SnakeGame() {
       setDirection(newDirection)
       directionRef.current = newDirection
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex items-center gap-8">
+          <div className="flex flex-col items-center">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Score</span>
+            <span className="font-mono text-4xl font-bold text-primary">0</span>
+          </div>
+          <div className="h-12 w-px bg-border" />
+          <div className="flex flex-col items-center">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">High Score</span>
+            <span className="font-mono text-4xl font-bold text-accent">0</span>
+          </div>
+        </div>
+        <div className="relative rounded-lg border-2 border-border bg-card p-1 shadow-lg shadow-primary/10">
+          <div
+            style={{ width: GRID_SIZE * CELL_SIZE, height: GRID_SIZE * CELL_SIZE }}
+            className="rounded bg-[#0a1628]"
+          />
+        </div>
+      </div>
+    )
   }
 
   return (
